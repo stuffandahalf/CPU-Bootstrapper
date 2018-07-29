@@ -1,3 +1,6 @@
+def peek(port, address):
+    pass
+
 def print_help():
     print 'Available Options:'
     print '  poke       Writes the given byte to the given address.'
