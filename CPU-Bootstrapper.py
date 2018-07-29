@@ -4,10 +4,14 @@
 # Written by Gregory Norton
 # July 28 2018
 
+import sys
 import serial
 import re
 
 from options import *
+
+if sys.version_info[0] >= 3:
+    raw_input = input
 
 #port_name = '/dev/ttyACM0'  # Arduino Mega 2560
 port_name = '/dev/ttyUSB0'  # Arduino Uno R3
@@ -16,7 +20,7 @@ number_re = r'((0x|$)[0-9a-f]+|[0-9]+)'
 whitespace_re = r'[ \t]+'
 
 peek_re = re.compile('^peek' + whitespace_re + number_re + '$', re.IGNORECASE)
-poke_re = re.compile('^poke' + whitespace_re + number_re + whitespace_re + number + '$')
+poke_re = re.compile('^poke' + whitespace_re + number_re + whitespace_re + number_re + '$')
 load_re = re.compile('^load' + whitespace_re + '.+$', re.IGNORECASE)
 exit_re = re.compile('^(exit|quit|q)$', re.IGNORECASE)
 
@@ -36,12 +40,12 @@ def main(args):
         if peek_re.match(command):
             #print command.split()
             command = command.split()
-            address = int(peek[1])
+            address = int(command[1])
             peek(port, address)
         elif poke_re.match(command):
-            print command.split()
+            print(command.split())
         elif load_re.match(command):
-            print command.split()
+            print(command.split())
         elif command == 'help':
             print_help()
         elif exit_re.match(command):
