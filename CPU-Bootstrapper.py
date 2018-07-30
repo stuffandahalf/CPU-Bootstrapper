@@ -6,23 +6,22 @@
 
 import sys
 import serial
-import re
 
 from options import *
 
 if sys.version_info[0] >= 3:
     raw_input = input
 
+def re_to_int(string):
+    if string.startswith('0x'):
+        return int(string, 16)
+    elif string.startswith('$'):
+        print int(string[1:], 16)
+    else:
+        return int(string)
+
 #port_name = '/dev/ttyACM0'  # Arduino Mega 2560
 port_name = '/dev/ttyUSB0'  # Arduino Uno R3
-
-number_re = r'((0x|$)[0-9a-f]+|[0-9]+)'
-whitespace_re = r'[ \t]+'
-
-peek_re = re.compile('^peek' + whitespace_re + number_re + '$', re.IGNORECASE)
-poke_re = re.compile('^poke' + whitespace_re + number_re + whitespace_re + number_re + '$')
-load_re = re.compile('^load' + whitespace_re + '.+$', re.IGNORECASE)
-exit_re = re.compile('^(exit|quit|q)$', re.IGNORECASE)
 
 def main(args):
     port = serial.Serial(port_name)
@@ -32,18 +31,26 @@ def main(args):
             command = raw_input('? ').strip()
         except EOFError:
             return 0
-            
-        address = 0
-        data = 0    
         
         #print command
-        if peek_re.match(command):
+        if acquire_re.match(command):
+            print(command)
+            acquire(port)
+        elif release_re.match(command):
+            print(command)
+            release(port)
+        elif peek_re.match(command):
             #print command.split()
             command = command.split()
-            address = int(command[1])
+            address = re_to_int(command[1]) & 0xFFFF
             peek(port, address)
+            print(command)
         elif poke_re.match(command):
             print(command.split())
+            command = command.split()
+            address = re_to_int(command[1]) & 0xFFFF
+            byte = re_to_int(command[2]) & 0xFF
+            poke(port, address, byte)
         elif load_re.match(command):
             print(command.split())
         elif command == 'help':
