@@ -1,0 +1,3 @@
+#!./CPU-Bootstrapper.py
+acquire
+release

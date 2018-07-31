@@ -24,7 +24,10 @@ def re_to_int(string):
 port_name = '/dev/ttyUSB0'  # Arduino Uno R3
 
 def main(args):
-    port = serial.Serial(port_name)
+    print args
+    
+    #port = serial.Serial(port_name)
+    port = None
 
     while True:
         try:
@@ -34,10 +37,10 @@ def main(args):
         
         #print command
         if acquire_re.match(command):
-            print(command)
+            print('acquire')
             acquire(port)
         elif release_re.match(command):
-            print(command)
+            print('release')
             release(port)
         elif peek_re.match(command):
             #print command.split()
@@ -57,6 +60,9 @@ def main(args):
             print_help()
         elif exit_re.match(command):
             break
+        elif comment_re.match(command):
+            print('Comment')
+            continue
         else:
             print('Invalid command')
             
