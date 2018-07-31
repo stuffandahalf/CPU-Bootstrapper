@@ -1,19 +1,14 @@
 import re
 
+start_re = r'^[ \t]*'
 number_re = r'((0x|$)[0-9a-f]+|[0-9]+)'
-whitespace_re = r'[ \t]*'
+whitespace_re = r'[ \t]+'
+end_re = r'[ \t]*$'
 
 def re_builder(*args):
-    re_str = r'^' + whitespace_re + whitespace_re.join(args) + whitespace_re + '$'
-    print re_str
+    re_str = start_re + whitespace_re.join(args) + end_re
+    #print re_str
     return re.compile(re_str, re.IGNORECASE)
-
-#acquire_re = re.compile('^' + whitespace_re + acquire$', re.IGNORECASE)
-#release_re = re.compile('^' + whitespace_ + 'release' + whitespace_re + '$'
-#peek_re = re.compile('^peek' + whitespace_re + number_re + '$', re.IGNORECASE)
-#poke_re = re.compile('^poke' + whitespace_re + number_re + whitespace_re + number_re + '$')
-#load_re = re.compile('^load' + whitespace_re + '.+$', re.IGNORECASE)
-#exit_re = re.compile('^(exit|quit|q)$', re.IGNORECASE)
 
 acquire_re = re_builder('(acquire|a)')
 release_re = re_builder('(release|r)')

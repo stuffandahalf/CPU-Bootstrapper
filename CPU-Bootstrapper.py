@@ -4,8 +4,9 @@
 # Written by Gregory Norton
 # July 28 2018
 
-import sys
+import argparse
 import serial
+import sys
 
 from options import *
 
@@ -13,17 +14,18 @@ if sys.version_info[0] >= 3:
     raw_input = input
 
 def re_to_int(string):
-    if string.startswith('0x'):
-        return int(string, 16)
-    elif string.startswith('$'):
-        print int(string[1:], 16)
-    else:
-        return int(string)
+    if string.startswith('0x'): return int(string, 16)
+    elif string.startswith('$'): return int(string[1:], 16)
+    else: return int(string)
 
 #port_name = '/dev/ttyACM0'  # Arduino Mega 2560
 port_name = '/dev/ttyUSB0'  # Arduino Uno R3
 
 def main(args):
+    parser = argparse.ArgumentParser(description='Load bytes into computer memory')
+    parser.add_argument('script', nargs='?', help='script FILE')
+    parser.print_help()
+    
     print args
     
     #port = serial.Serial(port_name)
@@ -62,6 +64,9 @@ def main(args):
             break
         elif comment_re.match(command):
             print('Comment')
+            continue
+        elif command == '':
+            print('blank')
             continue
         else:
             print('Invalid command')
