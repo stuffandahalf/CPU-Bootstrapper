@@ -5,72 +5,53 @@
 # July 28 2018
 
 import argparse
+import os
 import serial
 import sys
 
-from options import *
+from options import process
 
 if sys.version_info[0] >= 3:
     raw_input = input
 
-def re_to_int(string):
-    if string.startswith('0x'): return int(string, 16)
-    elif string.startswith('$'): return int(string[1:], 16)
-    else: return int(string)
-
-#port_name = '/dev/ttyACM0'  # Arduino Mega 2560
-port_name = '/dev/ttyUSB0'  # Arduino Uno R3
+port_name = '/dev/ttyACM0'  # Arduino Mega 2560 and leonardo
+#port_name = '/dev/ttyUSB0'  # Arduino Uno R3
 
 def main(args):
     parser = argparse.ArgumentParser(description='Load bytes into computer memory')
-    parser.add_argument('script', nargs='?', help='script FILE')
+    parser.add_argument('script', nargs='?', help='The script file to execute')
+    parser.add_argument('-port', '-p', nargs=1, default='/dev/ttyACM0', help='The serial port to send commands to')
     parser.print_help()
     
-    print args
+    args = parser.parse_args()
+    fd = None
+    if args.script != None and not os.path.isfile(args.script):
+        print('Script does not exist')
+        port.close()
+        return 1
     
-    #port = serial.Serial(port_name)
-    port = None
+    #if args.port != None:
+        #port_name = args.port
+    
+    port = serial.Serial(args.port)
+    #port = None
 
-    while True:
-        try:
-            command = raw_input('? ').strip()
-        except EOFError:
-            return 0
-        
-        #print command
-        if acquire_re.match(command):
-            print('acquire')
-            acquire(port)
-        elif release_re.match(command):
-            print('release')
-            release(port)
-        elif peek_re.match(command):
-            #print command.split()
-            command = command.split()
-            address = re_to_int(command[1]) & 0xFFFF
-            peek(port, address)
-            print(command)
-        elif poke_re.match(command):
-            print(command.split())
-            command = command.split()
-            address = re_to_int(command[1]) & 0xFFFF
-            byte = re_to_int(command[2]) & 0xFF
-            poke(port, address, byte)
-        elif load_re.match(command):
-            print(command.split())
-        elif command == 'help':
-            print_help()
-        elif exit_re.match(command):
-            break
-        elif comment_re.match(command):
-            print('Comment')
-            continue
-        elif command == '':
-            print('blank')
-            continue
-        else:
-            print('Invalid command')
-            
+    lineno = 0
+
+    if args.script == None:
+        while True:
+            try:
+                command = raw_input('? ').strip()
+            except EOFError:
+                break
+            if process(command, port) == -1:
+                break;
+    else:
+        with open(args.script) as f:
+            for command in f:
+                if process(command.strip(), port) == -1:
+                    break;
+    port.close()
     return 0
 
 if __name__ == '__main__':

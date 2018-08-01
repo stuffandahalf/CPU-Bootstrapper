@@ -12,28 +12,77 @@ def re_builder(*args):
 
 acquire_re = re_builder('(acquire|a)')
 release_re = re_builder('(release|r)')
+reset_re = re_builder('reset')
 peek_re = re_builder('(peek|p)', number_re)
 poke_re = re_builder('(poke|w)', number_re, number_re)
 load_re = re_builder('(load|l)', '.+')
 comment_re = re_builder('#.*')
 exit_re = re_builder('(exit|quit|q)')
 
+def re_to_int(string):
+    if string.startswith('0x'): return int(string, 16)
+    elif string.startswith('$'): return int(string[1:], 16)
+    else: return int(string)
+
+def process(command, port):
+    if acquire_re.match(command):
+        print('acquire')
+        acquire(port)
+    elif release_re.match(command):
+        print('release')
+        release(port)
+    elif reset_re.match(command):
+        print('reset')
+    elif peek_re.match(command):
+        #print command.split()
+        command = command.split()
+        address = re_to_int(command[1]) & 0xFFFF
+        peek(port, address)
+        print(command)
+    elif poke_re.match(command):
+        print(command.split())
+        command = command.split()
+        address = re_to_int(command[1]) & 0xFFFF
+        byte = re_to_int(command[2]) & 0xFF
+        poke(port, address, byte)
+    elif load_re.match(command):
+        print(command.split())
+    elif command == 'help':
+        print_help()
+    elif exit_re.match(command):
+        return -1
+    elif comment_re.match(command) or command == '':
+        print('ignore')
+        #continue
+    else:
+        print('Invalid command')
+
 def acquire(port):
+    #port.
     pass
     
 def release(port):
+    pass
+    
+def reset(port):
+    pass
+    
+def load(port, fd):
     pass
     
 def poke(port, address, byte):
     pass
 
 def peek(port, address):
-    pass
+    #pass
+    port.write(address)
+    print(port.readline())
 
 def print_help():
     print('Available Options:')
     print('  a  acquire                 Halts the cpu until release signal is sent.')
     print('  r  release                 Releases the bus.')
+    print('     reset                   Resets the CPU on release')
     print('  w  poke [ADDRESS] [BYTE]   Writes the given byte to the given address.')
     print('  p  peek [ADDRESS]          Prints the byte located at the given address.')
     print('  l  load [FNAME]            Loads a file into memory.')
