@@ -38,6 +38,9 @@ def main(args):
 
     lineno = 0
 
+    #port.write(232)
+    #print(ord(port.read(size=1)))
+
     if args.script == None:
         while True:
             try:

@@ -7,15 +7,30 @@ template <typename T>
 class Bus {
 private:
     byte *pins;
-    size_t pin_count;
 public:
-    Bus(byte *pins, size_t pin_count) {
+    Bus(byte pins[sizeof(T) * 8]) {
         this->pins = pins;
-        this->pin_count = pin_count;
     }
-    void set_mode(byte mode);
-    T read();
-    void write(const T data);
+    
+    void set_mode(byte mode) {
+        for (size_t i = 0; i < (sizeof(T) * 8); i++) {
+            pinMode(this->pins[i], mode);
+        }
+    }
+    
+    void write(const T data) {
+        for (size_t i = 0; i < (sizeof(T) * 8); i++) {
+            digitalWrite(this->pins[i], (data >> i) & 1);
+        }
+    }
+    
+    T read() {
+        T value = 0;
+        for (size_t i = (sizeof(T) * 8) - 1; i >= 0; i--) {
+            value += digitalRead(this->pins[i]) << i;
+        }
+        return value;
+    }
 };
 
 #endif

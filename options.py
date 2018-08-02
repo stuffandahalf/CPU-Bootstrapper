@@ -24,6 +24,13 @@ def re_to_int(string):
     elif string.startswith('$'): return int(string[1:], 16)
     else: return int(string)
 
+def ACQUIRE(): return chr(0)
+def RELEASE(): return char(1)
+def RESET(): return chr(2)
+def PEEK(): return chr(3)
+def POKE(): return chr(4)
+def INVALID(): return chr(5)
+
 def process(command, port):
     if acquire_re.match(command):
         print('acquire')
@@ -74,9 +81,12 @@ def poke(port, address, byte):
     pass
 
 def peek(port, address):
-    #pass
-    port.write(address)
-    print(port.readline())
+    port.write(PEEK())
+    port.write(chr((address >> 8) & 0xFF))
+    port.write(chr(address & 0xFF))
+    #naddress = ord(port.read(size=1)) << 8
+    #naddress += ord(port.read(size=1))
+    print ord(port.read(size=1))
 
 def print_help():
     print('Available Options:')

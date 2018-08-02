@@ -11,6 +11,7 @@
 #define POKE 4
 #define INVALID 255
 
+uint16_t get_address();
 void acquire();
 void release();
 void reset();
@@ -21,6 +22,19 @@ Bus<uint16_t> *address_bus;
 Bus<uint8_t> *data_bus;
 
 void setup() {
+    uint8_t address_pins[16];
+    uint8_t data_pins[8];
+    
+    for (uint8_t i = 0; i < 16; i++) {
+        address_pins[i] = 22 + (i * 2);
+    }
+    for (uint8_t i = 0; i < 8; i++) {
+        data_pins[i] = 23 + (i * 2);
+    }
+    
+    address_bus = new Bus<uint16_t>(address_pins);
+    data_bus = new Bus<uint8_t>(data_pins);
+    
     pinMode(LED_PIN, OUTPUT);
     pinMode(BUSREQ_PIN, OUTPUT);
     pinMode(RESET_PIN, OUTPUT);
@@ -30,6 +44,8 @@ void setup() {
 
 void loop() {
     byte mode = Serial.read();
+    /*if (mode != 255)
+        Serial.print(mode);*/
     uint16_t address;
     switch (mode) {
     case ACQUIRE:
@@ -37,14 +53,10 @@ void loop() {
     case RELEASE:
         break;
     case '3':
+        Serial.write(4);
+        break;
     case PEEK:
-        address = 0;
-        //address += Serial.read() << 8 + Serial.read();
-        //Serial.write(peek(address));
-        /*if (address == (('3' << 8) + '3')) {
-            digitalWrite(LED_PIN, HIGH);
-        }
-        Serial.write(address);*/
+        address = get_address();
         peek(address);
         break;
     case POKE:
@@ -52,6 +64,19 @@ void loop() {
     case INVALID:
         break;
     }
+}
+
+uint16_t get_address() {
+    uint8_t hbyte, lbyte;
+    do {
+        hbyte = Serial.read();
+    } while (hbyte == 255);
+    
+    do {
+        lbyte = Serial.read();
+    } while (lbyte == 255);
+    
+    return (hbyte << 8) + lbyte;
 }
 
 void acquire() {
@@ -63,5 +88,15 @@ void release() {
 }
 
 uint8_t peek(uint16_t address) {
-    Serial.write("3\n");
+    //Serial.write(digitalRead(LED_PIN));
+    //Serial.write(5);
+    //Serial.write("address\n");
+    //Serial.write(address);
+    if (digitalRead(BUSREQ_PIN)) {
+        return 0xFF;
+    }
+    else {
+        address_bus->write(address);
+        return data_bus->read();
+    }
 }
