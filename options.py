@@ -81,12 +81,13 @@ def poke(port, address, byte):
     pass
 
 def peek(port, address):
+    print(address)
     port.write(PEEK())
     port.write(chr((address >> 8) & 0xFF))
     port.write(chr(address & 0xFF))
     #naddress = ord(port.read(size=1)) << 8
     #naddress += ord(port.read(size=1))
-    print ord(port.read(size=1))
+    print(ord(port.read(size=1)))
 
 def print_help():
     print('Available Options:')

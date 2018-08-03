@@ -16,7 +16,7 @@ void acquire();
 void release();
 void reset();
 uint8_t peek(uint16_t address);
-void poke(uint16_t address, uint8_t data);
+bool poke(uint16_t address, uint8_t data);
 
 Bus<uint16_t> *address_bus;
 Bus<uint8_t> *data_bus;
@@ -43,38 +43,41 @@ void setup() {
 }
 
 void loop() {
-    byte mode = Serial.read();
+    uint8_t mode = Serial.read();
     /*if (mode != 255)
         Serial.print(mode);*/
     uint16_t address;
+    uint8_t data;
+    
     switch (mode) {
     case ACQUIRE:
         break;
     case RELEASE:
         break;
-    case '3':
-        Serial.write(4);
-        break;
     case PEEK:
         address = get_address();
-        peek(address);
+        Serial.write(peek(address));
         break;
     case POKE:
+        address = get_address();
+        data = get_byte();
+        Serial.write(poke(address, data));
         break;
     case INVALID:
         break;
     }
 }
 
+uint8_t get_byte() {
+    while (!Serial.available());
+    return Serial.read();
+}
+
 uint16_t get_address() {
     uint8_t hbyte, lbyte;
-    do {
-        hbyte = Serial.read();
-    } while (hbyte == 255);
     
-    do {
-        lbyte = Serial.read();
-    } while (lbyte == 255);
+    hbyte = get_byte();
+    lbyte = get_byte();
     
     return (hbyte << 8) + lbyte;
 }
@@ -88,10 +91,6 @@ void release() {
 }
 
 uint8_t peek(uint16_t address) {
-    //Serial.write(digitalRead(LED_PIN));
-    //Serial.write(5);
-    //Serial.write("address\n");
-    //Serial.write(address);
     if (digitalRead(BUSREQ_PIN)) {
         return 0xFF;
     }
@@ -99,4 +98,13 @@ uint8_t peek(uint16_t address) {
         address_bus->write(address);
         return data_bus->read();
     }
+}
+
+bool poke(uint16_t address, uint8_t data) {
+    if (!digitalRead(BUSREQ_PIN)) {
+        address_bus->write(address);
+        data_bus->write(data);
+        return data == data_bus->read();
+    }
+    return false;
 }

@@ -2,4 +2,6 @@
 # bss = BootStrap Script
 
 acquire
+load sum_test/sum_test.s19
+reset
 release
