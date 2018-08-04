@@ -28,10 +28,7 @@ def main(args):
     
     port = serial.Serial(args.port)
 
-    if args.script != None and not os.path.isfile(args.script):
-        print('Script does not exist')
-        port.close()
-        return 1
+    #if args.script != None and not os.path.isfile(args.script):
 
     lineno = 0
 
@@ -44,6 +41,10 @@ def main(args):
             if process(command, port) == -1:
                 break;
     else:
+        if not file_exists(args.script):
+            print('Script does not exist')
+            port.close()
+            return 1
         with open(args.script) as f:
             for command in f:
                 if process(command.strip(), port) == -1:

@@ -1,4 +1,6 @@
 import re
+import os
+from filetypes import *
 
 start_re = r'^[ \t]*'
 number_re = r'((0x|$)[0-9a-f]+|[0-9]+)'
@@ -54,6 +56,11 @@ def process(command, port):
         poke(port, address, byte)
     elif load_re.match(command):
         print(command.split())
+        fname = command.split()[1]
+        if not os.path.isfile(fname):
+            print('File does not exist')
+            return -1
+        load(port, fname)
     elif command == 'help':
         print_help()
     elif exit_re.match(command):
@@ -74,7 +81,8 @@ def release(port):
 def reset(port):
     pass
     
-def load(port, fd):
+def load(port, fname):
+    ftype = identify(fname)
     pass
     
 def poke(port, address, byte):
