@@ -1,5 +1,7 @@
 import re
 import os
+# -*- coding: utf-8 -*-
+
 from filetypes import *
 
 start_re = r'^[ \t]*'
@@ -27,7 +29,7 @@ def re_to_int(string):
     else: return int(string)
 
 def ACQUIRE(): return chr(0)
-def RELEASE(): return char(1)
+def RELEASE(): return chr(1)
 def RESET(): return chr(2)
 def PEEK(): return chr(3)
 def POKE(): return chr(4)
@@ -72,21 +74,31 @@ def process(command, port):
         print('Invalid command')
 
 def acquire(port):
-    #port.
-    pass
+    port.write(ACQUIRE())
+    if ord(port.read(size=1)):
+        print('Bus acquired')
+    #pass
     
 def release(port):
-    pass
+    port.write(RELEASE())
+    if ord(port.read(size=1)):
+        print('Bus Released')
+    #pass
     
 def reset(port):
     pass
     
 def load(port, fname):
     ftype = identify(fname)
-    pass
+    print(ftype)
+    #pass
     
-def poke(port, address, byte):
-    pass
+def poke(port, address, data):
+    port.write(chr((address >> 8) & 0xFF))
+    port.write(chr(address & 0xFF))
+    port.write(chr(data))
+    print(ord(port.read(size=1)))
+    #pass
 
 def peek(port, address):
     print(address)

@@ -27,10 +27,11 @@ def main(args):
     #print args
     
     port = serial.Serial(args.port)
-
+    port.read(size=1)
+    #print(ord(port.read(size=1)))
     #if args.script != None and not os.path.isfile(args.script):
 
-    lineno = 0
+    #lineno = 0
 
     if args.script == None:
         while True:

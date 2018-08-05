@@ -20,16 +20,19 @@ public:
     
     void write(const T data) {
         for (size_t i = 0; i < (sizeof(T) * 8); i++) {
+            pinMode(this->pins[i], OUTPUT);
             digitalWrite(this->pins[i], (data >> i) & 1);
         }
     }
     
     T read() {
-        T value = 0;
+        T data = 0;
         for (size_t i = (sizeof(T) * 8) - 1; i >= 0; i--) {
-            value += digitalRead(this->pins[i]) << i;
+        //for (size_t i = 0; i < (sizeof(T) * 8); i++) {
+            pinMode(this->pins[i], INPUT);
+            data += digitalRead(this->pins[i]) << i;
         }
-        return value;
+        return data;
     }
 };
 

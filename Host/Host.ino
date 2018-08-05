@@ -2,7 +2,8 @@
 
 #define LED_PIN 13
 #define BUSREQ_PIN 22
-#define RESET_PIN 24
+#define RW_PIN 10
+#define RESET_PIN 7
 
 #define ACQUIRE 0
 #define RELEASE 1
@@ -10,6 +11,9 @@
 #define PEEK 3
 #define POKE 4
 #define INVALID 255
+
+#define READ HIGH
+#define WRITE LOW
 
 uint16_t get_address();
 void acquire();
@@ -26,10 +30,10 @@ void setup() {
     uint8_t data_pins[8];
     
     for (uint8_t i = 0; i < 16; i++) {
-        address_pins[i] = 22 + (i * 2);
+        address_pins[i] = 23 + (i * 2);
     }
     for (uint8_t i = 0; i < 8; i++) {
-        data_pins[i] = 23 + (i * 2);
+        data_pins[i] = 38 + (i * 2);
     }
     
     address_bus = new Bus<uint16_t>(address_pins);
@@ -37,22 +41,38 @@ void setup() {
     
     pinMode(LED_PIN, OUTPUT);
     pinMode(BUSREQ_PIN, OUTPUT);
+    pinMode(RW_PIN, INPUT_PULLUP);
     pinMode(RESET_PIN, OUTPUT);
-    digitalWrite(LED_PIN, HIGH);
+    
+    //digitalWrite(LED_PIN, HIGH);
+    digitalWrite(BUSREQ_PIN, HIGH);
+    digitalWrite(RESET_PIN, HIGH);
+    
+    reset();
+    
+    /*acquire();
+    address_bus->write(0);
+    uint8_t data = data_bus->read();
+    Serial.write(data);
+    */
     Serial.begin(9600);
+    Serial.write(1);
 }
 
 void loop() {
     uint8_t mode = Serial.read();
-    /*if (mode != 255)
-        Serial.print(mode);*/
+    
     uint16_t address;
     uint8_t data;
     
     switch (mode) {
     case ACQUIRE:
+        acquire();
+        Serial.write(1);
         break;
     case RELEASE:
+        release();
+        Serial.write(1);
         break;
     case PEEK:
         address = get_address();
@@ -82,26 +102,40 @@ uint16_t get_address() {
     return (hbyte << 8) + lbyte;
 }
 
+void reset() {
+    digitalWrite(RESET_PIN, LOW);
+    delay(1000);
+    digitalWrite(RESET_PIN, HIGH);
+}
+
 void acquire() {
     digitalWrite(BUSREQ_PIN, LOW);
+    pinMode(RW_PIN, OUTPUT);
+    digitalWrite(LED_PIN, HIGH);
 }
 
 void release() {
     digitalWrite(BUSREQ_PIN, HIGH);
+    pinMode(RW_PIN, INPUT_PULLUP);
+    digitalWrite(LED_PIN, LOW);
 }
 
 uint8_t peek(uint16_t address) {
+    //Serial.write(digitalRead(BUSREQ_PIN));
     if (digitalRead(BUSREQ_PIN)) {
         return 0xFF;
     }
     else {
+        digitalWrite(RW_PIN, READ);
         address_bus->write(address);
+        //return 5;
         return data_bus->read();
     }
 }
 
 bool poke(uint16_t address, uint8_t data) {
     if (!digitalRead(BUSREQ_PIN)) {
+        digitalWrite(RW_PIN, WRITE);
         address_bus->write(address);
         data_bus->write(data);
         return data == data_bus->read();
