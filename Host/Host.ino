@@ -22,6 +22,12 @@ void reset();
 uint8_t peek(uint16_t address);
 bool poke(uint16_t address, uint8_t data);
 
+void blink() {
+    digitalWrite(LED_PIN, LOW);
+    delay(500);
+    digitalWrite(LED_PIN, HIGH);
+}
+
 Bus<uint16_t> *address_bus;
 Bus<uint8_t> *data_bus;
 
@@ -49,12 +55,7 @@ void setup() {
     digitalWrite(RESET_PIN, HIGH);
     
     reset();
-    
-    /*acquire();
-    address_bus->write(0);
-    uint8_t data = data_bus->read();
-    Serial.write(data);
-    */
+
     Serial.begin(9600);
     Serial.write(1);
 }
@@ -66,22 +67,38 @@ void loop() {
     uint8_t data;
     
     switch (mode) {
+    case 'a':
     case ACQUIRE:
         acquire();
         Serial.write(1);
         break;
+    case 'r':
     case RELEASE:
         release();
         Serial.write(1);
         break;
     case PEEK:
         address = get_address();
-        Serial.write(peek(address));
+        //if (address == 0xFFEF) blink();
+        //Serial.write(peek(address));
+        data = peek(address);
+        Serial.write(data);
+        //if (data == 12) blink();
+        //peek(address);
         break;
     case POKE:
         address = get_address();
+        //if (address == 0xFFEF) blink();
         data = get_byte();
         Serial.write(poke(address, data));
+        break;
+    case 'q':
+        data = peek(0xFFEF);
+        if (data == 'a') blink();
+        Serial.println(data);
+        break;
+    case 'w':
+        Serial.println(poke(0xFFEF, 'a'));
         break;
     case INVALID:
         break;
@@ -89,15 +106,19 @@ void loop() {
 }
 
 uint8_t get_byte() {
-    while (!Serial.available());
+    while (Serial.available() < 1);
     return Serial.read();
 }
 
 uint16_t get_address() {
     uint8_t hbyte, lbyte;
     
-    hbyte = get_byte();
-    lbyte = get_byte();
+    /*hbyte = get_byte();
+    lbyte = get_byte();*/
+    while (Serial.available() < 2);
+    blink();
+    hbyte = Serial.read();
+    lbyte = Serial.read();
     
     return (hbyte << 8) + lbyte;
 }
@@ -118,6 +139,8 @@ void release() {
     digitalWrite(BUSREQ_PIN, HIGH);
     pinMode(RW_PIN, INPUT_PULLUP);
     digitalWrite(LED_PIN, LOW);
+    address_bus->set_mode(INPUT_PULLUP);
+    data_bus->set_mode(INPUT_PULLUP);
 }
 
 uint8_t peek(uint16_t address) {
@@ -138,6 +161,7 @@ bool poke(uint16_t address, uint8_t data) {
         digitalWrite(RW_PIN, WRITE);
         address_bus->write(address);
         data_bus->write(data);
+        if (data == 0x12) blink();
         return data == data_bus->read();
     }
     return false;

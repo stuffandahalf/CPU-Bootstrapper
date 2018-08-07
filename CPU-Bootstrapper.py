@@ -28,6 +28,7 @@ def main(args):
     
     port = serial.Serial(args.port)
     port.read(size=1)
+    #port.write(chr(0xFF))
     #print(ord(port.read(size=1)))
     #if args.script != None and not os.path.isfile(args.script):
 

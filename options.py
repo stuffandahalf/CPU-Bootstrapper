@@ -55,6 +55,7 @@ def process(command, port):
         command = command.split()
         address = re_to_int(command[1]) & 0xFFFF
         byte = re_to_int(command[2]) & 0xFF
+        print address
         poke(port, address, byte)
     elif load_re.match(command):
         print(command.split())
@@ -94,14 +95,18 @@ def load(port, fname):
     #pass
     
 def poke(port, address, data):
+    port.write(POKE())
     port.write(chr((address >> 8) & 0xFF))
     port.write(chr(address & 0xFF))
-    port.write(chr(data))
-    print(ord(port.read(size=1)))
+    port.write(chr(data & 0xFF))
+    if ord(port.read(size=1)) == 1:
+        print('Success')
+    else:
+        print('Failed')
     #pass
 
 def peek(port, address):
-    print(address)
+    #print(address)
     port.write(PEEK())
     port.write(chr((address >> 8) & 0xFF))
     port.write(chr(address & 0xFF))
