@@ -26,10 +26,8 @@ public:
         for (int i = 0; i < sizeof(T) * 8; i++) {
             pinMode(this->pins[i], OUTPUT);
             digitalWrite(pins[i], data & 1);
-            Serial.print(data & 1);
             data >>= 1;
         }
-        Serial.println();
     }
     
     T get() {
