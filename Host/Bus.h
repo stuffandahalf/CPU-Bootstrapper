@@ -3,11 +3,13 @@
 
 #include <Arduino.h>
 
+#define LED_PIN 13
+
 template <typename T>
 class Bus {
 private:
     byte pins[sizeof(T) * 8];
-    
+
 public:
     Bus(byte pins[sizeof(T) * 8]) {
         for (int i = 0; i < sizeof(T) * 8; i++) {
@@ -15,13 +17,13 @@ public:
         }
         this->set_mode(INPUT_PULLUP);
     }
-    
+
     void set_mode(byte mode) {
         for (int i = 0; i < sizeof(T) * 8; i++) {
             pinMode(this->pins[i], mode);
         }
     }
-    
+
     void set(T data) {
         for (int i = 0; i < sizeof(T) * 8; i++) {
             pinMode(this->pins[i], OUTPUT);
@@ -31,7 +33,7 @@ public:
         }
         Serial.println();
     }
-    
+
     T get() {
         T data = 0;
         for (int i = (sizeof(T) * 8) - 1; i >= 0; i--) {
@@ -43,7 +45,7 @@ public:
         }
         return data;
     }
-    
+
 };
 
 #endif
