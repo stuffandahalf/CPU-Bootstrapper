@@ -43,10 +43,8 @@ uint8_t Memory::read(uint16_t address) {
 void Memory::read(uint16_t address, size_t byte_count, uint8_t *data_out) {
     pinMode(this->rw_pin, OUTPUT);
     digitalWrite(this->rw_pin, HIGH);
-    delay(10);
     for (size_t i = 0; i < byte_count; i++) {
         address_bus->set(address + i);
-        delay(15);
         data_out[i] = data_bus->get();
         Serial.print(data_out[i], HEX);
         Serial.print(' ');
@@ -63,11 +61,9 @@ void Memory::write(uint16_t address, uint8_t data) {
 void Memory::write(uint16_t address, size_t byte_count, uint8_t *data) {
     pinMode(this->rw_pin, OUTPUT);
     digitalWrite(this->rw_pin, HIGH);
-    //delay(10);
     for (size_t i = 0; i < byte_count; i++) {
         address_bus->set(address + i);
         digitalWrite(this->rw_pin, LOW);    // Set to read so i dont overwrite valid locations during address transition
-        //delay(15);
         data_bus->set(data[i]);
         digitalWrite(this->rw_pin, HIGH);
         Serial.print(data[i], HEX);

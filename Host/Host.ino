@@ -129,7 +129,7 @@ void setup() {
     delay(500);
     halt_and_acquire_bus();
     
-    Serial.println(memory->read(0x800A));
+    Serial.println(memory->read(0x800A));   // Should print 10
 }
 
 void loop() {
